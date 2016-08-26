@@ -16,6 +16,16 @@ import random
 # Third-party libraries
 import numpy as np
 
+"""
+Keep in mind that this class is only used for computing gradident by
+only one sample, and forward propagation is the same, only for one sample.
+Because this is the start of the lecture, so it is easy to start with only
+one sample.
+
+But if you want to improve the performance and leverage the modern matrix library
+then you need to change the code to vectorized it.
+"""
+
 class Network(object):
 
     def __init__(self, sizes):
@@ -37,8 +47,9 @@ class Network(object):
 
     def feedforward(self, a):
         """Return the output of the network if ``a`` is input."""
+        """ a should be a vector """
         for b, w in zip(self.biases, self.weights):
-            a = sigmoid(np.dot(w, a)+b)
+            a = sigmoid(np.dot(w, a) + b)
         return a
 
     def SGD(self, training_data, epochs, mini_batch_size, eta,
@@ -71,15 +82,26 @@ class Network(object):
         gradient descent using backpropagation to a single mini batch.
         The ``mini_batch`` is a list of tuples ``(x, y)``, and ``eta``
         is the learning rate."""
+        """
+        Although this is called SGD, and it did compute as SGD way, but
+        the speed is very slow because it compute the gradient of samples
+        one by one, and then sum up the gradient of each sample as total 
+        gradient of mini batch, this way could not leverage the advantage of 
+        modern Matrix library.
+        """
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
+            # delta_nabla_w & delta_nabla_b record the gradient change for 
+            # each weight matrix of one sample
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
-        self.weights = [w-(eta/len(mini_batch))*nw
+            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+
+        # gradient descent update
+        self.weights = [w - (eta / len(mini_batch)) * nw
                         for w, nw in zip(self.weights, nabla_w)]
-        self.biases = [b-(eta/len(mini_batch))*nb
+        self.biases = [b - (eta / len(mini_batch)) * nb
                        for b, nb in zip(self.biases, nabla_b)]
 
     def backprop(self, x, y):
@@ -129,13 +151,26 @@ class Network(object):
     def cost_derivative(self, output_activations, y):
         """Return the vector of partial derivatives \partial C_x /
         \partial a for the output activations."""
-        return (output_activations-y)
+        return (output_activations - y)
+
 
 #### Miscellaneous functions
 def sigmoid(z):
     """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
+    return 1.0 / (1.0 + np.exp(-z))
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
+    """
+    d sigmoid(x)
+    ------------ = sigmoid(x) * (1 - sigmoid(x))
+    d x
+    """
+    return sigmoid(z) * (1-sigmoid(z))
+
+
+if __name__ == '__main__':
+    sizes = [784, 512, 10]
+    learning_rate = 0.001
+    epochs = 20
+    mini_batch_size = 64
