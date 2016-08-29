@@ -109,6 +109,14 @@ class Network(object):
         gradient for the cost function C_x.  ``nabla_b`` and
         ``nabla_w`` are layer-by-layer lists of numpy arrays, similar
         to ``self.biases`` and ``self.weights``."""
+
+        """
+        ref link: http://www.jianshu.com/p/c69cd43c537a
+        you could visit this link to get a better understand of how the
+        network update its parameters.
+        I will give a tutorial on network parameter update in future,
+        you could pay attention to my blog: http://blog.csdn.net/watkinsong
+        """
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         # feedforward
