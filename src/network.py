@@ -180,7 +180,16 @@ def sigmoid_prime(z):
 
 
 if __name__ == '__main__':
-    sizes = [784, 512, 10]
-    learning_rate = 0.001
-    epochs = 20
+    sizes = [784, 100, 10]
+    learning_rate = 0.1
+    epochs = 30
     mini_batch_size = 64
+
+    import mnist_loader
+    training_data, validation_data, test_data = mnist_loader.load_data_wrapper()
+
+    # define a network
+    net = Network(sizes)
+
+    # learn the network by SGD
+    net.SGD(training_data, epochs, mini_batch_size, learning_rate, test_data=test_data)
