@@ -81,7 +81,7 @@ class Network(object):
         self.num_layers = len(sizes)
         self.sizes = sizes
         self.default_weight_initializer()
-        self.cost=cost
+        self.cost = cost
 
     def default_weight_initializer(self):
         """Initialize each weight using a Gaussian distribution with mean 0
@@ -161,29 +161,37 @@ class Network(object):
             mini_batches = [
                 training_data[k:k+mini_batch_size]
                 for k in xrange(0, n, mini_batch_size)]
+
             for mini_batch in mini_batches:
                 self.update_mini_batch(
                     mini_batch, eta, lmbda, len(training_data))
+
             print "Epoch %s training complete" % j
+
             if monitor_training_cost:
                 cost = self.total_cost(training_data, lmbda)
                 training_cost.append(cost)
                 print "Cost on training data: {}".format(cost)
+
             if monitor_training_accuracy:
                 accuracy = self.accuracy(training_data, convert=True)
                 training_accuracy.append(accuracy)
                 print "Accuracy on training data: {} / {}".format(
                     accuracy, n)
+
             if monitor_evaluation_cost:
                 cost = self.total_cost(evaluation_data, lmbda, convert=True)
                 evaluation_cost.append(cost)
                 print "Cost on evaluation data: {}".format(cost)
+
             if monitor_evaluation_accuracy:
                 accuracy = self.accuracy(evaluation_data)
                 evaluation_accuracy.append(accuracy)
                 print "Accuracy on evaluation data: {} / {}".format(
-                    self.accuracy(evaluation_data), n_data)
+                    accuracy, n_data)
+
             print
+
         return evaluation_cost, evaluation_accuracy, \
             training_cost, training_accuracy
 
@@ -195,12 +203,21 @@ class Network(object):
         ``n`` is the total size of the training data set.
 
         """
+
+        """
+        still not using the matrix mutilplication to speed up, means 
+        compute the mini-batch update in one shot.
+        The code still compute training example one by one.
+        """
+
         nabla_b = [np.zeros(b.shape) for b in self.biases]
         nabla_w = [np.zeros(w.shape) for w in self.weights]
         for x, y in mini_batch:
             delta_nabla_b, delta_nabla_w = self.backprop(x, y)
-            nabla_b = [nb+dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
-            nabla_w = [nw+dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+            nabla_b = [nb + dnb for nb, dnb in zip(nabla_b, delta_nabla_b)]
+            nabla_w = [nw + dnw for nw, dnw in zip(nabla_w, delta_nabla_w)]
+
+        # with L2 regularization, each weight need to minus another amount
         self.weights = [(1-eta*(lmbda/n))*w-(eta/len(mini_batch))*nw
                         for w, nw in zip(self.weights, nabla_w)]
         self.biases = [b-(eta/len(mini_batch))*nb
@@ -269,6 +286,7 @@ class Network(object):
         else:
             results = [(np.argmax(self.feedforward(x)), y)
                         for (x, y) in data]
+
         return sum(int(x == y) for (x, y) in results)
 
     def total_cost(self, data, lmbda, convert=False):
@@ -279,12 +297,17 @@ class Network(object):
         reversed) convention for the ``accuracy`` method, above.
         """
         cost = 0.0
+
+        # cost of cross entropy or quadratic error
         for x, y in data:
             a = self.feedforward(x)
             if convert: y = vectorized_result(y)
             cost += self.cost.fn(a, y)/len(data)
+
+        # cost of L2 regularization
         cost += 0.5*(lmbda/len(data))*sum(
             np.linalg.norm(w)**2 for w in self.weights)
+
         return cost
 
     def save(self, filename):
@@ -319,14 +342,16 @@ def vectorized_result(j):
     into a corresponding desired output from the neural network.
 
     """
+
+    """output is a numpy array"""
     e = np.zeros((10, 1))
     e[j] = 1.0
     return e
 
 def sigmoid(z):
     """The sigmoid function."""
-    return 1.0/(1.0+np.exp(-z))
+    return 1.0 / (1.0 + np.exp(-z))
 
 def sigmoid_prime(z):
     """Derivative of the sigmoid function."""
-    return sigmoid(z)*(1-sigmoid(z))
+    return sigmoid(z) * (1 - sigmoid(z))
